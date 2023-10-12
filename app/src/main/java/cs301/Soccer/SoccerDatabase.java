@@ -3,6 +3,7 @@ package cs301.Soccer;
 import android.util.Log;
 import cs301.Soccer.soccerPlayer.SoccerPlayer;
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -89,6 +90,12 @@ public class SoccerDatabase implements SoccerDB {
     @Override
     public boolean bumpYellowCards(String firstName, String lastName) {
 
+        String key = createKey(firstName, lastName);
+        SoccerPlayer player = getPlayer(firstName, lastName);
+        if(player != null){
+            player.bumpYellowCards();
+            return true;
+        }
         return false;
     }
 
@@ -100,6 +107,12 @@ public class SoccerDatabase implements SoccerDB {
     @Override
     public boolean bumpRedCards(String firstName, String lastName) {
 
+        String key = createKey(firstName, lastName);
+        SoccerPlayer player = getPlayer(firstName, lastName);
+        if(player != null){
+            player.bumpRedCards();
+            return true;
+        }
         return false;
     }
 
@@ -112,7 +125,19 @@ public class SoccerDatabase implements SoccerDB {
     // report number of players on a given team (or all players, if null)
     public int numPlayers(String teamName) {
 
-        return -1;
+        if(teamName == null){
+            return database.size();
+        }
+        else{
+            int onTeam = 0;
+            Collection<SoccerPlayer> players = database.values();
+            for(SoccerPlayer player: players) {
+                if (player.getTeamName().equals(teamName)) {
+                    onTeam++;
+                }
+            }
+           return onTeam;
+        }
     }
 
     /**
@@ -123,6 +148,31 @@ public class SoccerDatabase implements SoccerDB {
     // get the nTH player
     @Override
     public SoccerPlayer playerIndex(int idx, String teamName) {
+        if(idx+1 > numPlayers(teamName)){
+            return null;
+        }
+        int index = 0;
+        Collection<SoccerPlayer> players = database.values();
+        for(SoccerPlayer player: players){
+
+            if(teamName != null){
+                if(player.getTeamName().equals(teamName)){
+                    if(index == idx) {
+                        return player;
+                    }
+                    index++;
+
+                }
+
+            }
+            else{
+                if(index == idx){
+                    return player;
+                }
+                index++;
+
+            }
+        }
         return null;
     }
 
@@ -146,7 +196,19 @@ public class SoccerDatabase implements SoccerDB {
     // write data to file
     @Override
     public boolean writeData(File file) {
-        return false;
+        if (file == null) {
+            return false;
+        }
+        Collection<SoccerPlayer> players = database.values();
+        try {
+            PrintWriter pw = new PrintWriter(file);
+            for (SoccerPlayer player: players) {
+                pw.println(logString(player.getFirstName()));
+            }
+
+        }
+        catch(Exception e){}
+        return true;
     }
 
     /**
